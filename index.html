@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>玻璃效果顏色選擇器</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: "Microsoft JhengHei", Arial, sans-serif;
+            padding: 1rem;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s ease;
+        }
+        .color-card {
+            background-color: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 0.75rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            max-width: 450px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .color-header {
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .color-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .save-btn {
+            background-color: rgba(52, 152, 219, 0.8);
+            color: white;
+            border: none;
+            border-radius: 0.25rem;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .save-btn:hover {
+            background-color: rgba(52, 152, 219, 1);
+            transform: translateY(-1px);
+        }
+        .color-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .input-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 0.5rem;
+        }
+        .rgb-row {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .input-label {
+            font-size: 0.8rem;
+            margin-bottom: 0.25rem;
+            color: #4A5568;
+            font-weight: 600;
+        }
+        input[type="text"], input[type="number"] {
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 0.25rem;
+            padding: 0.35rem;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+        input[type="text"] {
+            width: 90px;
+        }
+        input[type="number"] {
+            width: 60px;
+        }
+        .color-preview {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        input[type="number"]::-webkit-inner-spin-button {
+            opacity: 1;
+            height: 25px;
+        }
+        .input-help {
+            font-size: 0.75rem;
+            color: rgba(0, 0, 0, 0.6);
+            margin-top: 0.25rem;
+            font-style: italic;
+        }
+        .description {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(255, 255, 255, 0.35);
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            color: #4A5568;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+        .description ul {
+            list-style-type: disc;
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+        .saved-colors {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(255, 255, 255, 0.35);
+            border-radius: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+        .saved-colors-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #4A5568;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .clear-all {
+            font-size: 0.75rem;
+            color: #E53E3E;
+            cursor: pointer;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            transition: all 0.2s ease;
+        }
+        .clear-all:hover {
+            background-color: rgba(229, 62, 62, 0.1);
+        }
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .saved-color {
+            height: 40px;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .saved-color:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+        .saved-color .color-hex {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-size: 0.65rem;
+            padding: 0.1rem;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .saved-color:hover .color-hex {
+            opacity: 1;
+        }
+        .delete-color {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            border-radius: 0 0.25rem 0 0.25rem;
+        }
+        .saved-color:hover .delete-color {
+            opacity: 1;
+        }
+        .no-colors {
+            text-align: center;
+            padding: 0.5rem;
+            color: #718096;
+            font-style: italic;
+            font-size: 0.8rem;
+        }
+        .color-name-input {
+            width: 100%;
+            margin-bottom: 0.5rem;
+            padding: 0.35rem;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 0.25rem;
+            background-color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+        }
+        .color-action-buttons {
+            display: flex;
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+        .saved-color:hover .color-action-buttons {
+            opacity: 1;
+        }
+        .color-action-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: bold;
+            transition: background-color 0.2s ease;
+        }
+        .color-action-btn:hover {
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+        .divider {
+            width: 1px;
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        .copy-feedback, .apply-feedback {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: bold;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+    </style>
+</head>
+<body id="body-background">
+    <div class="color-card">
+        <div class="color-header">
+            <input type="text" id="colorName" class="color-name-input" placeholder="顏色名稱 (可選)" maxlength="20">
+            <div class="color-actions">
+                <button id="saveColor" class="save-btn">保存顏色</button>
+                <div class="color-preview" id="colorPreview" title="點擊複製顏色碼"></div>
+            </div>
+        </div>
+        <div class="color-inputs">
+            <!-- HEX 輸入區域 -->
+            <div class="input-group">
+                <label class="input-label">HEX 色碼</label>
+                <input type="text" id="hexInput" value="#3498DE" maxlength="7">
+                <div class="input-help">支援有無 # 號的HEX碼 (例如: #3498DE 或 3498DE)</div>
+            </div>
+            
+            <!-- RGB 輸入區域 -->
+            <div class="input-group">
+                <label class="input-label">RGB 色值</label>
+                <div class="rgb-row">
+                    <div class="input-group">
+                        <label class="input-label">R</label>
+                        <input type="number" id="redInput" min="0" max="255" value="52">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">G</label>
+                        <input type="number" id="greenInput" min="0" max="255" value="152">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">B</label>
+                        <input type="number" id="blueInput" min="0" max="255" value="219">
+                    </div>
+                </div>
+                <div class="input-help">可直接在R欄位貼上 "R G B" 格式，例如: 160 80 94</div>
+            </div>
+            
+            <!-- 保存的顏色區域 -->
+            <div class="saved-colors">
+                <div class="saved-colors-title">
+                    <span>已保存的顏色</span>
+                    <span id="clearAll" class="clear-all">清除全部</span>
+                </div>
+                <div id="colorGrid" class="color-grid">
+                    <!-- 已保存的顏色將在這裡動態生成 -->
+                    <div class="no-colors">尚未保存任何顏色</div>
+                </div>
+            </div>
+            
+            <!-- 說明欄位 -->
+            <div class="description">
+                <p>這是新瑪奇染色參考工具。你可以通過以下方式使用：</p>
+                <ul>
+                    <li>輸入HEX色碼或RGB值來選擇顏色</li>
+                    <li>點擊顏色預覽圓點可複製目前的HEX色碼</li>
+                    <li>在R欄位中可直接貼上空格分隔的RGB值</li>
+                    <li>輸入名稱並點擊「保存顏色」來保存常用顏色</li>
+                    <li>點擊保存的顏色方塊可同時應用或複製顏色碼</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化DOM元素
+        const hexInput = document.getElementById('hexInput');
+        const redInput = document.getElementById('redInput');
+        const greenInput = document.getElementById('greenInput');
+        const blueInput = document.getElementById('blueInput');
+        const colorPreview = document.getElementById('colorPreview');
+        const bodyBackground = document.getElementById('body-background');
+        const saveColorBtn = document.getElementById('saveColor');
+        const colorNameInput = document.getElementById('colorName');
+        const colorGrid = document.getElementById('colorGrid');
+        const clearAllBtn = document.getElementById('clearAll');
+        
+        // 載入保存的顏色
+        loadSavedColors();
+        
+        // 更新顏色預覽和背景
+        function updateColorPreview() {
+            const r = parseInt(redInput.value) || 0;
+            const g = parseInt(greenInput.value) || 0;
+            const b = parseInt(blueInput.value) || 0;
+            
+            // 確保值在0-255範圍內
+            const validR = Math.min(255, Math.max(0, r));
+            const validG = Math.min(255, Math.max(0, g));
+            const validB = Math.min(255, Math.max(0, b));
+            
+            // 更新RGB輸入框
+            redInput.value = validR;
+            greenInput.value = validG;
+            blueInput.value = validB;
+            
+            // 將RGB轉換為HEX
+            const hex = rgbToHex(validR, validG, validB);
+            hexInput.value = hex;
+            
+            // 更新預覽圓圈和背景
+            colorPreview.style.backgroundColor = hex;
+            bodyBackground.style.backgroundColor = hex;
+            
+            // 判斷顏色亮度，調整文字顏色
+            const brightness = (validR * 299 + validG * 587 + validB * 114) / 1000;
+            if (brightness < 128) {
+                document.querySelectorAll('.input-label, .input-help').forEach(el => {
+                    el.style.color = 'rgba(255, 255, 255, 0.8)';
+                });
+                document.querySelector('.description').style.color = 'rgba(255, 255, 255, 0.9)';
+                document.querySelector('.saved-colors-title').style.color = 'rgba(255, 255, 255, 0.9)';
+                document.getElementById('clearAll').style.color = 'rgba(255, 200, 200, 0.9)';
+                colorNameInput.style.color = 'rgba(255, 255, 255, 0.9)';
+            } else {
+                document.querySelectorAll('.input-label, .input-help').forEach(el => {
+                    el.style.color = 'rgba(0, 0, 0, 0.7)';
+                });
+                document.querySelector('.description').style.color = '#4A5568';
+                document.querySelector('.saved-colors-title').style.color = '#4A5568';
+                document.getElementById('clearAll').style.color = '#E53E3E';
+                colorNameInput.style.color = '#4A5568';
+            }
+        }
+        
+        // RGB轉HEX的功能
+        function rgbToHex(r, g, b) {
+            const toHex = (n) => {
+                const hex = n.toString(16);
+                return hex.length === 1 ? '0' + hex : hex;
+            };
+            return `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase();
+        }
+        
+        // HEX轉RGB的功能
+        function hexToRgb(hex) {
+            // 確保有 # 符號
+            if (!hex.startsWith('#')) {
+                hex = '#' + hex;
+            }
+            
+            // 解析HEX值
+            let r, g, b;
+            
+            // 移除 # 符號進行解析
+            const cleanHex = hex.substring(1);
+            
+            // 檢查是否為有效的6位16進位
+            if (cleanHex.length === 6) {
+                r = parseInt(cleanHex.substring(0, 2), 16);
+                g = parseInt(cleanHex.substring(2, 4), 16);
+                b = parseInt(cleanHex.substring(4, 6), 16);
+            } else if (cleanHex.length === 3) {
+                // 支援簡短HEX碼 (例如 #ABC)
+                r = parseInt(cleanHex.charAt(0) + cleanHex.charAt(0), 16);
+                g = parseInt(cleanHex.charAt(1) + cleanHex.charAt(1), 16);
+                b = parseInt(cleanHex.charAt(2) + cleanHex.charAt(2), 16);
+            } else {
+                // 如果格式無效，返回預設值
+                r = 0;
+                g = 0;
+                b = 0;
+            }
+            
+            // 解析失敗時確保值是有效的數字
+            r = isNaN(r) ? 0 : r;
+            g = isNaN(g) ? 0 : g;
+            b = isNaN(b) ? 0 : b;
+            
+            return { r, g, b };
+        }
+        
+        // 解析RGB格式的輸入
+        function parseRgbInput(input) {
+            // 移除多餘空格並按空格分割
+            const parts = input.trim().split(/\s+/);
+            
+            if (parts.length === 3) {
+                const r = parseInt(parts[0]);
+                const g = parseInt(parts[1]);
+                const b = parseInt(parts[2]);
+                
+                if (!isNaN(r) && !isNaN(g) && !isNaN(b)) {
+                    return { r, g, b };
+                }
+            }
+            
+            return null;
+        }
+        
+        // 設置HEX輸入事件監聽器
+        hexInput.addEventListener('input', (e) => {
+            let value = e.target.value;
+            
+            // 處理沒有 # 的情況
+            if (value.length > 0 && !value.startsWith('#')) {
+                value = '#' + value;
+                // 當用戶輸入不帶#時，自動添加，但不更新input值
+                // 這樣讓用戶體驗更流暢，不會干擾用戶輸入
+            }
+            
+            // 檢查HEX格式是否看起來合理
+            if ((value.length === 7 && value.startsWith('#')) || 
+                (value.length === 6 && !value.startsWith('#'))) {
+                const rgb = hexToRgb(value);
+                redInput.value = rgb.r;
+                greenInput.value = rgb.g;
+                blueInput.value = rgb.b;
+                updateColorPreview();
+            }
+        });
+        
+        // 處理HEX輸入失去焦點時的格式化
+        hexInput.addEventListener('blur', () => {
+            let value = hexInput.value;
+            
+            // 確保有 # 號
+            if (value && !value.startsWith('#')) {
+                value = '#' + value;
+                hexInput.value = value;
+            }
+            
+            // 驗證並更新RGB值
+            const rgb = hexToRgb(value);
+            redInput.value = rgb.r;
+            greenInput.value = rgb.g;
+            blueInput.value = rgb.b;
+            updateColorPreview();
+        });
+        
+        // 設置RGB輸入監聽器
+        [redInput, greenInput, blueInput].forEach(input => {
+            input.addEventListener('input', updateColorPreview);
+            
+            // 添加粘貼功能到R輸入框
+            if (input === redInput) {
+                input.addEventListener('paste', (e) => {
+                    // 獲取剪貼板內容
+                    const pasteData = (e.clipboardData || window.clipboardData).getData('text');
+                    
+                    // 嘗試解析為RGB格式
+                    const rgb = parseRgbInput(pasteData);
+                    
+                    if (rgb) {
+                        // 如果是有效的RGB格式，更新所有輸入框
+                        e.preventDefault(); // 阻止默認粘貼行為
+                        redInput.value = rgb.r;
+                        greenInput.value = rgb.g;
+                        blueInput.value = rgb.b;
+                        updateColorPreview();
+                    }
+                    // 如果不是RGB格式，保持默認粘貼行為
+                });
+            }
+        });
+        
+        // 顏色預覽點擊複製HEX值
+        colorPreview.addEventListener('click', () => {
+            copyToClipboard(hexInput.value);
+        });
+        
+        // 保存顏色
+        saveColorBtn.addEventListener('click', () => {
+            const hex = hexInput.value;
+            const name = colorNameInput.value.trim() || hex;
+            
+            // 獲取已保存的顏色
+            let savedColors = JSON.parse(localStorage.getItem('savedColors') || '[]');
+            
+            // 檢查是否已存在相同的顏色
+            const exists = savedColors.some(color => color.hex.toLowerCase() === hex.toLowerCase());
+            
+            if (!exists) {
+                // 新增顏色到陣列
+                savedColors.push({
+                    hex: hex,
+                    name: name,
+                    r: redInput.value,
+                    g: greenInput.value,
+                    b: blueInput.value
+                });
+                
+                // 保存到本地存儲
+                localStorage.setItem('savedColors', JSON.stringify(savedColors));
+                
+                // 更新顯示
+                loadSavedColors();
+                
+                // 重置名稱輸入框
+                colorNameInput.value = '';
+                
+                // 顯示動畫效果
+                saveColorBtn.textContent = "已保存!";
+                saveColorBtn.style.backgroundColor = "rgba(72, 187, 120, 0.8)";
+                setTimeout(() => {
+                    saveColorBtn.textContent = "保存顏色";
+                    saveColorBtn.style.backgroundColor = "rgba(52, 152, 219, 0.8)";
+                }, 1000);
+            } else {
+                // 如果顏色已存在，顯示提示
+                saveColorBtn.textContent = "顏色已存在";
+                saveColorBtn.style.backgroundColor = "rgba(237, 137, 54, 0.8)";
+                setTimeout(() => {
+                    saveColorBtn.textContent = "保存顏色";
+                    saveColorBtn.style.backgroundColor = "rgba(52, 152, 219, 0.8)";
+                }, 1000);
+            }
+        });
+        
+        // 複製到剪貼板並顯示反饋
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text)
+                .then(() => {
+                    // 顯示複製成功提示
+                    const originalColor = colorPreview.style.backgroundColor;
+                    colorPreview.style.boxShadow = "0 0 0 2px white, 0 0 10px 2px white";
+                    setTimeout(() => {
+                        colorPreview.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.15)";
+                    }, 300);
+                })
+                .catch(err => {
+                    console.error('複製失敗: ', err);
+                });
+        }
+        
+        // 載入保存的顏色
+        function loadSavedColors() {
+            // 獲取已保存的顏色
+            const savedColors = JSON.parse(localStorage.getItem('savedColors') || '[]');
+            
+            // 清空網格
+            colorGrid.innerHTML = '';
+            
+            if (savedColors.length === 0) {
+                // 如果沒有保存的顏色，顯示提示
+                colorGrid.innerHTML = '<div class="no-colors">尚未保存任何顏色</div>';
+                return;
+            }
+            
+            // 添加每個顏色到網格
+            savedColors.forEach((color, index) => {
+                const colorBox = document.createElement('div');
+                colorBox.className = 'saved-color';
+                colorBox.style.backgroundColor = color.hex;
+                colorBox.title = color.name;
+                
+                // 添加顏色編碼
+                const colorHex = document.createElement('div');
+                colorHex.className = 'color-hex';
+                colorHex.textContent = color.hex;
+                colorBox.appendChild(colorHex);
+                
+                // 添加操作按鈕
+                const actionButtons = document.createElement('div');
+                actionButtons.className = 'color-action-buttons';
+                
+                // 應用按鈕
+                const applyBtn = document.createElement('button');
+                applyBtn.className = 'color-action-btn';
+                applyBtn.textContent = '應用';
+                applyBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    applyColor(color);
+                    
+                    // 顯示應用反饋
+                    const feedback = document.createElement('div');
+                    feedback.className = 'apply-feedback';
+                    feedback.textContent = '已應用!';
+                    colorBox.appendChild(feedback);
+                    feedback.style.opacity = '1';
+                    
+                    setTimeout(() => {
+                        feedback.style.opacity = '0';
+                        setTimeout(() => {
+                            feedback.remove();
+                        }, 200);
+                    }, 500);
+                });
+                
+                // 添加分隔線
+                const divider = document.createElement('div');
+                divider.className = 'divider';
+                
+                // 複製按鈕
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'color-action-btn';
+                copyBtn.textContent = '複製';
+                copyBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    copyToClipboard(color.hex);
+                    
+                    // 顯示複製反饋
+                    const feedback = document.createElement('div');
+                    feedback.className = 'copy-feedback';
+                    feedback.textContent = '已複製!';
+                    colorBox.appendChild(feedback);
+                    feedback.style.opacity = '1';
+                    
+                    setTimeout(() => {
+                        feedback.style.opacity = '0';
+                        setTimeout(() => {
+                            feedback.remove();
+                        }, 200);
+                    }, 500);
+                });
+                
+                actionButtons.appendChild(applyBtn);
+                actionButtons.appendChild(divider);
+                actionButtons.appendChild(copyBtn);
+                colorBox.appendChild(actionButtons);
+                
+                // 添加刪除按鈕
+                const deleteBtn = document.createElement('div');
+                deleteBtn.className = 'delete-color';
+                deleteBtn.innerHTML = '×';
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    deleteColor(index);
+                });
+                colorBox.appendChild(deleteBtn);
+                
+                colorGrid.appendChild(colorBox);
+            });
+        }
+        
+        // 應用已保存的顏色
+        function applyColor(color) {
+            hexInput.value = color.hex;
+            redInput.value = color.r;
+            greenInput.value = color.g;
+            blueInput.value = color.b;
+            updateColorPreview();
+            colorNameInput.value = color.name !== color.hex ? color.name : '';
+        }
+        
+        // 刪除顏色
+        function deleteColor(index) {
+            // 獲取已保存的顏色
+            let savedColors = JSON.parse(localStorage.getItem('savedColors') || '[]');
+            
+            // 從陣列中移除
+            savedColors.splice(index, 1);
+            
+            // 更新本地存儲
+            localStorage.setItem('savedColors', JSON.stringify(savedColors));
+            
+            // 更新顯示
+            loadSavedColors();
+        }
+        
+        // 清除所有顏色
+        clearAllBtn.addEventListener('click', () => {
+            if (confirm('確定要清除所有保存的顏色嗎？')) {
+                localStorage.removeItem('savedColors');
+                loadSavedColors();
+            }
+        });
+        
+        // 初始化顏色預覽
+        updateColorPreview();
+    </script>
+</body>
+</html>
